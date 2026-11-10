@@ -354,11 +354,26 @@ const NOMES_REL = {
   lista: 'Lista de vendas',
 };
 
-function tabelaGrupo(titulo, rotulo, linhas, total, fmtChave = esc) {
+// Para cada valor do campo (dia, pagamento, tipo), lista os produtos vendidos com a quantidade: "2x Capinha, 1x iPhone"
+function produtosPorCampo(vendas, campo) {
+  const mapa = new Map();
+  for (const v of vendas) {
+    if (!mapa.has(v[campo])) mapa.set(v[campo], new Map());
+    const prods = mapa.get(v[campo]);
+    prods.set(v.produto, (prods.get(v.produto) || 0) + v.quantidade);
+  }
+  return (chave) => [...(mapa.get(chave) || new Map())]
+    .sort((a, b) => b[1] - a[1])
+    .map(([p, q]) => `${q}x ${esc(p)}`)
+    .join(', ');
+}
+
+function tabelaGrupo(titulo, rotulo, linhas, total, fmtChave = esc, produtosDe = null) {
   if (!linhas.length) return '';
   const corpo = linhas.map((l) => `
     <tr>
       <td>${fmtChave(l.chave)}</td>
+      ${produtosDe ? `<td class="produtos">${produtosDe(l.chave)}</td>` : ''}
       <td class="num">${l.vendas}</td>
       <td class="num">${l.itens}</td>
       <td class="num">${fmtBRL(l.total)}</td>
@@ -369,9 +384,9 @@ function tabelaGrupo(titulo, rotulo, linhas, total, fmtChave = esc) {
   return `
     ${titulo ? `<h3>${titulo}</h3>` : ''}
     <div class="tabela-scroll"><table>
-      <thead><tr><th>${rotulo}</th><th class="num">Vendas</th><th class="num">Itens</th><th class="num">Total</th><th class="num">%</th></tr></thead>
+      <thead><tr><th>${rotulo}</th>${produtosDe ? '<th>Produtos vendidos</th>' : ''}<th class="num">Vendas</th><th class="num">Itens</th><th class="num">Total</th><th class="num">%</th></tr></thead>
       <tbody>${corpo}</tbody>
-      <tfoot><tr><td>Total</td><td class="num">${sv}</td><td class="num">${si}</td><td class="num">${fmtBRL(total)}</td><td class="num">100%</td></tr></tfoot>
+      <tfoot><tr><td${produtosDe ? ' colspan="2"' : ''}>Total</td><td class="num">${sv}</td><td class="num">${si}</td><td class="num">${fmtBRL(total)}</td><td class="num">100%</td></tr></tfoot>
     </table></div>`;
 }
 
@@ -431,19 +446,24 @@ $('#form-relatorio').addEventListener('submit', async (e) => {
 
     if (!r.resumo.vendas) {
       html += '<p class="vazio">Nenhuma venda no período/filtros selecionados.</p>';
-    } else if (tipoRel === 'geral') {
-      html += tabelaGrupo('Por forma de pagamento', 'Forma de pagamento', r.por_pagamento, total);
-      html += tabelaGrupo('Por tipo de produto', 'Tipo', r.por_tipo, total);
-      html += tabelaGrupo('Por dia', 'Dia', r.por_dia, total, fmtDia);
-      html += tabelaGrupo('Por produto', 'Produto', r.por_produto, total);
-    } else if (tipoRel === 'dia') {
-      html += tabelaGrupo('', 'Dia', r.por_dia, total, fmtDia);
-    } else if (tipoRel === 'produto') {
-      html += tabelaGrupo('', 'Produto', r.por_produto, total);
-    } else if (tipoRel === 'pagamento') {
-      html += tabelaGrupo('', 'Forma de pagamento', r.por_pagamento, total);
-    } else if (tipoRel === 'tipo') {
-      html += tabelaGrupo('', 'Tipo de produto', r.por_tipo, total);
+    } else {
+      const prodPorPag = produtosPorCampo(r.vendas, 'pagamento');
+      const prodPorTipo = produtosPorCampo(r.vendas, 'tipo');
+      const prodPorDia = produtosPorCampo(r.vendas, 'data');
+      if (tipoRel === 'geral') {
+        html += tabelaGrupo('Por forma de pagamento', 'Forma de pagamento', r.por_pagamento, total, esc, prodPorPag);
+        html += tabelaGrupo('Por tipo de produto', 'Tipo', r.por_tipo, total, esc, prodPorTipo);
+        html += tabelaGrupo('Por dia', 'Dia', r.por_dia, total, fmtDia, prodPorDia);
+        html += tabelaGrupo('Por produto', 'Produto', r.por_produto, total);
+      } else if (tipoRel === 'dia') {
+        html += tabelaGrupo('', 'Dia', r.por_dia, total, fmtDia, prodPorDia);
+      } else if (tipoRel === 'produto') {
+        html += tabelaGrupo('', 'Produto', r.por_produto, total);
+      } else if (tipoRel === 'pagamento') {
+        html += tabelaGrupo('', 'Forma de pagamento', r.por_pagamento, total, esc, prodPorPag);
+      } else if (tipoRel === 'tipo') {
+        html += tabelaGrupo('', 'Tipo de produto', r.por_tipo, total, esc, prodPorTipo);
+      }
     }
 
     if (r.resumo.vendas && (tipoRel === 'lista' || $('#r-detalhado').checked)) {

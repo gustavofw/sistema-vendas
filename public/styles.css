@@ -121,6 +121,7 @@ summary { cursor: pointer; color: var(--cor); font-weight: 600; margin-bottom: 1
 .relatorio th, .relatorio td { padding: 8px 6px; border-bottom: 1px solid var(--borda); text-align: left; }
 .relatorio th { background: var(--cor-clara); font-weight: 600; }
 .relatorio td.num, .relatorio th.num { text-align: right; white-space: nowrap; }
+.relatorio td.produtos { font-size: .85rem; color: var(--suave); min-width: 180px; }
 .relatorio tfoot td { font-weight: 700; border-top: 2px solid var(--texto); }
 .relatorio h3 { margin-top: 8px; font-size: 1rem; color: var(--cor); }
 .rel-cab { border-bottom: 2px solid var(--cor); padding-bottom: 10px; margin-bottom: 14px; }
