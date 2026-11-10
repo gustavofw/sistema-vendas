@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f3a5f">
+  <title>Controle de Vendas</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <section id="tela-login" class="login hidden">
+    <form id="form-login" class="card login-card">
+      <div class="logo">📱</div>
+      <h1>Controle de Vendas</h1>
+      <label>Senha
+        <input type="password" id="login-senha" autocomplete="current-password" required autofocus>
+      </label>
+      <button type="submit" class="btn primary">Entrar</button>
+      <p id="login-erro" class="erro"></p>
+    </form>
+  </section>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="topo no-print">
+      <h1>Controle de Vendas</h1>
+      <button id="btn-sair" class="btn ghost small">Sair</button>
+    </header>
+
+    <nav class="abas no-print">
+      <button data-aba="nova" class="ativa"><span>➕</span>Nova venda</button>
+      <button data-aba="vendas"><span>🧾</span>Vendas</button>
+      <button data-aba="relatorios"><span>📊</span>Relatórios</button>
+    </nav>
+
+    <main>
+      <!-- NOVA VENDA -->
+      <section id="aba-nova" class="aba">
+        <form id="form-venda" class="card">
+          <h2 id="form-titulo">Registrar venda</h2>
+          <input type="hidden" id="v-id">
+
+          <label>Produto vendido *
+            <input type="text" id="v-produto" list="lista-produtos" required placeholder="Ex.: iPhone 13 128GB, Capinha Galaxy A54...">
+          </label>
+
+          <div class="linha">
+            <label>Tipo de produto *
+              <input type="text" id="v-tipo" list="lista-tipos" required placeholder="Escolha ou digite">
+            </label>
+            <label class="pequeno">Quantidade
+              <input type="number" id="v-qtd" min="1" step="1" value="1" inputmode="numeric">
+            </label>
+          </div>
+
+          <div class="linha">
+            <label>Valor unitário (R$) *
+              <input type="text" id="v-valor" inputmode="decimal" required placeholder="0,00">
+            </label>
+            <label>Total
+              <input type="text" id="v-total" readonly tabindex="-1">
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>Forma de pagamento *</legend>
+            <div id="v-pagamentos" class="chips"></div>
+            <input type="text" id="v-pagamento-outro" class="hidden" placeholder="Qual forma de pagamento?">
+          </fieldset>
+
+          <div class="linha">
+            <label>Data
+              <input type="date" id="v-data" required>
+            </label>
+            <label>Hora
+              <input type="time" id="v-hora" required>
+            </label>
+          </div>
+
+          <label>Observação
+            <input type="text" id="v-obs" placeholder="Opcional (cliente, IMEI, parcelas...)">
+          </label>
+
+          <div class="acoes">
+            <button type="button" id="btn-cancelar-edicao" class="btn ghost hidden">Cancelar</button>
+            <button type="submit" class="btn primary grande">Salvar venda</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <h2>Vendas de hoje</h2>
+          <div id="resumo-hoje" class="resumo"></div>
+          <div id="lista-hoje"></div>
+        </div>
+      </section>
+
+      <!-- LISTA DE VENDAS -->
+      <section id="aba-vendas" class="aba hidden">
+        <div class="card">
+          <h2>Vendas</h2>
+          <div class="linha">
+            <label>De <input type="date" id="f-inicio"></label>
+            <label>Até <input type="date" id="f-fim"></label>
+          </div>
+          <label>Buscar produto <input type="search" id="f-busca" placeholder="Digite parte do nome"></label>
+          <div id="resumo-lista" class="resumo"></div>
+          <div id="lista-vendas"></div>
+        </div>
+      </section>
+
+      <!-- RELATÓRIOS -->
+      <section id="aba-relatorios" class="aba hidden">
+        <form id="form-relatorio" class="card no-print">
+          <h2>Gerar relatório</h2>
+
+          <label>Tipo de relatório
+            <select id="r-tipo-rel">
+              <option value="geral">Relatório geral (completo)</option>
+              <option value="dia">Por dia</option>
+              <option value="produto">Por produto</option>
+              <option value="pagamento">Por forma de pagamento</option>
+              <option value="tipo">Por tipo de produto</option>
+              <option value="lista">Lista de vendas</option>
+            </select>
+          </label>
+
+          <label>Período
+            <select id="r-periodo">
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="7">Últimos 7 dias</option>
+              <option value="mes" selected>Este mês</option>
+              <option value="mes-passado">Mês passado</option>
+              <option value="ano">Este ano</option>
+              <option value="personalizado">Personalizado</option>
+            </select>
+          </label>
+          <div class="linha">
+            <label>De <input type="date" id="r-inicio" required></label>
+            <label>Até <input type="date" id="r-fim" required></label>
+          </div>
+
+          <details>
+            <summary>Filtros opcionais</summary>
+            <label>Tipo de produto
+              <select id="r-filtro-tipo"><option value="">Todos</option></select>
+            </label>
+            <label>Forma de pagamento
+              <select id="r-filtro-pagamento"><option value="">Todas</option></select>
+            </label>
+            <label>Produto contém
+              <input type="text" id="r-filtro-produto" list="lista-produtos" placeholder="Ex.: iPhone">
+            </label>
+            <label class="check"><input type="checkbox" id="r-detalhado"> Incluir lista detalhada de vendas</label>
+          </details>
+
+          <div class="acoes">
+            <button type="submit" class="btn primary">Gerar relatório</button>
+            <button type="button" id="btn-imprimir" class="btn" disabled>🖨️ Imprimir</button>
+          </div>
+          <p class="dica">Para salvar em PDF, clique em Imprimir e escolha “Salvar como PDF”.</p>
+        </form>
+
+        <div id="relatorio" class="card relatorio hidden"></div>
+      </section>
+    </main>
+  </div>
+
+  <datalist id="lista-produtos"></datalist>
+  <datalist id="lista-tipos"></datalist>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

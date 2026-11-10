@@ -1,0 +1,13 @@
+{
+  "name": "Controle de Vendas",
+  "short_name": "Vendas",
+  "description": "Registro de vendas e relatórios",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f5f8",
+  "theme_color": "#1f3a5f",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
